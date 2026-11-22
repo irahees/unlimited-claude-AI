@@ -904,76 +904,67 @@
 
         async function handleManualAuth() {
             const authButton = document.getElementById('authButton');
-            
+            const authBox = authButton?.closest('div[style*="max-width: 600px"]');
+            const protocolNotice = document.getElementById('protocolNotice');
+
+            const showStatus = (message, color = '#f59e0b') => {
+                if (protocolNotice) {
+                    protocolNotice.textContent = message;
+                    protocolNotice.style.color = color;
+                }
+            };
+
             try {
+                if (!window.puter || !puter.auth || typeof puter.auth.signIn !== 'function') {
+                    throw new Error('Puter.js did not load. Check your internet connection and reload the app.');
+                }
+
                 if (authButton) {
-                    authButton.textContent = '🔄 Authenticating...';
+                    authButton.textContent = 'Opening Puter sign-in...';
                     authButton.disabled = true;
                 }
-                
-                console.log('🔐 Manually triggering Puter authentication...');
-                
-                // Trigger authentication with a simple test call
-                const authResponse = await puter.ai.chat("test", {model: 'claude-sonnet-4'});
-                
-                console.log('✅ Raw auth response:', authResponse);
+                showStatus('Complete sign-in in the Puter window. Return here after signing in.');
 
-                // Check for a successful response structure
-                if (authResponse && (authResponse.message?.content || authResponse.success !== false)) {
-                     console.log('✅ Authentication successful!');
-                    if (authButton) {
-                        authButton.textContent = '✅ Authenticated';
-                        authButton.style.backgroundColor = '#22c55e';
-                        setTimeout(() => {
-                           const authBox = authButton.closest('div[style*="max-width: 600px"]');
-                           if(authBox) authBox.style.display = 'none';
-                        }, 2000);
-                    }
-                } else {
-                    throw new Error('Authentication response indicates failure.');
+                // Must be called directly from this button click because Puter opens a popup.
+                await puter.auth.signIn();
+
+                const signedIn = typeof puter.auth.isSignedIn === 'function'
+                    ? puter.auth.isSignedIn()
+                    : true;
+
+                if (!signedIn) {
+                    throw new Error('Puter sign-in window closed, but the session was not confirmed. Please try again.');
                 }
-                
-            } catch (error) {
-                console.error('❌ Manual authentication failed:', error);
-                
+
                 if (authButton) {
-                    authButton.textContent = '❌ Auth Failed - Try Guide';
+                    authButton.textContent = '✓ Connected to Puter';
+                    authButton.style.backgroundColor = '#16a34a';
+                    authButton.disabled = false;
+                }
+                showStatus('Puter account connected successfully.', '#22c55e');
+                if (authBox) setTimeout(() => { authBox.style.display = 'none'; }, 1600);
+
+            } catch (error) {
+                console.error('Puter sign-in failed:', error);
+                const code = error?.error || error?.code || '';
+                let message = error?.msg || error?.message || 'Unknown authentication error';
+
+                if (code === 'popup_blocked') {
+                    message = 'Chrome blocked the sign-in popup. Allow pop-ups for irahees.github.io in Chrome Site settings, then try again.';
+                } else if (code === 'auth_window_closed') {
+                    message = 'Sign-in was cancelled or the Puter window was closed. Tap Authenticate and finish signing in.';
+                } else if (code === 'unsupported_origin') {
+                    message = 'Puter does not recognize this page origin. Open the app from its GitHub Pages URL in Chrome.';
+                } else if (code === 'not_available_in_app') {
+                    message = 'This sign-in method is not available in this Puter app context.';
+                }
+
+                if (authButton) {
+                    authButton.textContent = '🔐 Try Puter sign-in again';
                     authButton.disabled = false;
                     authButton.style.backgroundColor = '#dc2626';
                 }
-                
-                // --- ENHANCED ERROR MESSAGE ---
-                const troubleshootGuide = `
-⚠️ AUTHENTICATION FAILED!
-
-This usually happens because of your browser profile settings (extensions, cache, etc.), NOT a bug in the code.
-
-As you noticed, it works in a new Guest or Incognito profile. Here is how to fix it in your MAIN profile:
-
---- TROUBLESHOOTING GUIDE ---
-
-✅ QUICKEST FIX (TRY FIRST):
-1.  🥷 Use Incognito/Private Mode:
-    • Press Ctrl+Shift+N (Chrome/Edge) or Ctrl+Shift+P (Firefox).
-    • Open this HTML file there. This is the fastest workaround.
-
-🔧 TO FIX YOUR MAIN PROFILE (TRY IN ORDER):
-2.  🔌 Disable Extensions:
-    • Go to your browser's extensions page (e.g., chrome://extensions).
-    • TEMPORARILY disable ALL extensions, especially ad-blockers (uBlock, AdBlock) and privacy blockers.
-    • Refresh this page and try authenticating again.
-
-3.  🧹 Clear Site Data for Puter:
-    • Go to puter.com, click the 🔒 icon in the address bar -> Site Settings/Cookies and site data -> Delete data.
-    • Refresh this page and try again.
-
-4.  🍪 Allow Third-Party Cookies:
-    • Go to your browser's cookie settings (e.g., chrome://settings/cookies).
-    • Ensure "Block third-party cookies" is NOT enabled, or add "[*.]puter.com" to the allowed list.
-
-If you are running this from a local server (like localhost), the issue is almost certainly extensions or cookie settings.
-`;
-                alert(troubleshootGuide);
+                showStatus('Authentication failed: ' + message, '#fca5a5');
             }
         }
 
@@ -988,6 +979,18 @@ If you are running this from a local server (like localhost), the issue is almos
             const authButton = document.getElementById('authButton');
 
             if (authButton) authButton.addEventListener('click', handleManualAuth);
+
+            // Restore the signed-in state when the installed PWA is reopened.
+            try {
+                if (authButton && window.puter?.auth?.isSignedIn?.()) {
+                    authButton.textContent = '✓ Connected to Puter';
+                    authButton.style.backgroundColor = '#16a34a';
+                    const authBox = authButton.closest('div[style*="max-width: 600px"]');
+                    if (authBox) authBox.style.display = 'none';
+                }
+            } catch (error) {
+                console.warn('Could not read Puter sign-in state:', error);
+            }
 
             [welcomeInput, chatInput].forEach(textarea => {
                 if (textarea) {
