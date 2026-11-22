@@ -25,10 +25,10 @@
     <small>Install this app from Chrome menu → Add to Home screen.</small>
   </main>
   <script>
-    const chatPath = "/unlimited%20claude/Claude.html";
+    const chatPath = "./unlimited%20claude/Claude.html";
     document.getElementById("open").addEventListener("click", () => location.href = chatPath);
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js").catch(err => console.warn("Offline support unavailable:", err));
+      navigator.serviceWorker.register("./sw.js").catch(err => console.warn("Offline support unavailable:", err));
     }
     window.setTimeout(() => { if (location.pathname === "/") location.replace(chatPath); }, 900);
   </script>
