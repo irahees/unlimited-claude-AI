@@ -617,9 +617,74 @@
                 justify-content: center;
             }
         }
+
+        /* Responsive app redesign */
+        .app-topbar{display:none}
+        .sidebar{flex:0 0 260px;width:260px;min-width:260px}
+        .main-content{min-width:0;min-height:0}
+        .content-area{min-width:0}
+        .welcome-screen{min-width:0;width:100%;padding:clamp(18px,4vw,40px)}
+        .search-container,.search-input{min-width:0}
+        .search-input{display:block;white-space:pre-wrap;overflow-wrap:anywhere}
+        .model-selector{margin-right:0}
+        @media(max-width:760px){
+          body{height:100dvh;min-height:100dvh;overflow:hidden}
+          .container{height:100dvh;min-height:0;display:flex;flex-direction:column}
+          .app-topbar{height:58px;flex:0 0 58px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:#202020;border-bottom:1px solid #353535;position:relative;z-index:30}
+          .app-brand{font-size:17px;font-weight:650;letter-spacing:-.3px}
+          .app-menu-btn,.app-new-btn{border:1px solid #3b3b3b;background:#292929;color:#f4f4f4;border-radius:11px;padding:9px 12px;font-size:14px}
+          .app-new-btn{color:#f08b69}
+          .sidebar{position:fixed;z-index:50;left:0;top:0;bottom:0;width:min(82vw,300px);min-width:0;flex:initial;transform:translateX(-105%);transition:transform .22s ease;box-shadow:16px 0 40px #0008}
+          .sidebar.open{transform:translateX(0)}
+          .sidebar-backdrop{display:none;position:fixed;inset:0;background:#0009;z-index:40}
+          .sidebar-backdrop.open{display:block}
+          .main-content{flex:1;min-height:0;width:100%;height:auto}
+          .content-area{width:100%;max-width:760px;margin:0 auto;padding:16px 16px calc(18px + env(safe-area-inset-bottom));min-height:0}
+          .welcome-screen{justify-content:center;align-items:stretch;gap:16px;padding:12px 0;width:100%;min-height:0}
+          .greeting{font-size:clamp(25px,7vw,34px);line-height:1.2;gap:10px;margin:0 0 10px;letter-spacing:-.7px}
+          .sun-icon{width:26px;height:26px;flex:0 0 26px}
+          .search-container{max-width:none;width:100%;margin:0}
+          .search-input{width:100%;min-height:116px;max-height:190px;padding:16px 58px 48px 16px;border-radius:18px;font-size:16px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+          .search-actions{right:10px;top:auto;bottom:10px;transform:none}
+          .search-btn{font-size:13px;padding:9px 10px}
+          .send-btn{width:42px;height:42px;border-radius:12px}
+          .welcome-screen > div[style*="max-width: 600px"]{width:100%;max-width:none!important;margin:0!important;padding:15px!important;border-radius:16px!important}
+          .welcome-screen > div[style*="max-width: 600px"] div{font-size:13px!important;line-height:1.45}
+          #authButton{width:100%;min-height:46px;font-size:14px!important}
+          .model-selector{align-self:flex-start;margin:0}
+          .model-btn{padding:8px 0;font-size:14px}
+          .action-buttons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%}
+          .action-btn{justify-content:center;min-width:0;padding:12px 6px;font-size:13px;border-radius:13px}
+          .action-btn svg{width:16px;height:16px}
+          .chat-container{height:100%;max-height:100%;min-height:0}
+          .chat-messages{height:auto;flex:1;min-height:0;padding:14px 10px 8px;margin:0}
+          .message{gap:8px;margin-bottom:18px}
+          .message-avatar{width:28px;height:28px}
+          .message-content{max-width:calc(100% - 36px);padding:12px;font-size:15px}
+          .message.user .message-content{padding:12px}
+          .message.assistant .message-content{max-width:calc(100% - 36px)}
+          .message-text-part{padding:10px 2px;overflow-wrap:anywhere}
+          .artifact-canvas{margin:10px 0;max-width:100%}
+          .chat-container .search-container{position:relative;bottom:auto;padding:10px 0 max(10px,env(safe-area-inset-bottom));background:#1a1a1a}
+          .chat-container .search-input{min-height:58px;max-height:150px;padding:14px 58px 14px 14px}
+          .chat-container .search-actions{top:50%;bottom:auto;transform:translateY(-50%)}
+          .typing-indicator{padding:8px}
+          .model-selector{margin-bottom:0}
+        }
+        @media(min-width:761px){
+          .sidebar{width:260px;min-width:260px}
+          .content-area{max-width:900px}
+        }
+
     </style>
 </head>
 <body>
+    <div class="app-topbar">
+      <button class="app-menu-btn" id="mobileMenuBtn" type="button" aria-label="Open menu">☰</button>
+      <div class="app-brand">Claude</div>
+      <button class="app-new-btn" id="mobileNewChatBtn" type="button">＋ New chat</button>
+    </div>
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
     <div class="container">
         <!-- Sidebar -->
         <div class="sidebar">
@@ -1328,6 +1393,19 @@ If you are running this from a local server (like localhost), the issue is almos
             textarea.style.height = 'auto';
             textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px';
         }
+    
+        // Mobile navigation drawer
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.querySelector('.sidebar');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            const menu = document.getElementById('mobileMenuBtn');
+            const mobileNew = document.getElementById('mobileNewChatBtn');
+            const closeMenu = () => { sidebar?.classList.remove('open'); backdrop?.classList.remove('open'); };
+            menu?.addEventListener('click', () => { sidebar?.classList.add('open'); backdrop?.classList.add('open'); });
+            backdrop?.addEventListener('click', closeMenu);
+            mobileNew?.addEventListener('click', () => { closeMenu(); startNewChat(); });
+            document.querySelectorAll('.nav-item,.recent-item').forEach(el => el.addEventListener('click', closeMenu));
+        });
     </script>
 </body>
 </html>
