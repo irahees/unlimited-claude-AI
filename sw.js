@@ -1,4 +1,4 @@
-const CACHE_NAME = "claude-chat-pwa-v3";
+const CACHE_NAME = "claude-chat-pwa-v4";
 const BASE = new URL("./", self.registration.scope).pathname;
 const APP_SHELL = [BASE, BASE + "index.html", BASE + "manifest.webmanifest", BASE + "icons/icon.svg", BASE + "unlimited%20claude/Claude.html"];
 self.addEventListener("install", event => {
