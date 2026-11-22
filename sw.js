@@ -1,5 +1,6 @@
 const CACHE_NAME = "claude-chat-pwa-v1";
-const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest", "/icons/icon.svg", "/unlimited%20claude/Claude.html"];
+const BASE = new URL("./", self.registration.scope).pathname;
+const APP_SHELL = [BASE, BASE + "index.html", BASE + "manifest.webmanifest", BASE + "icons/icon.svg", BASE + "unlimited%20claude/Claude.html"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
 });
@@ -15,7 +16,7 @@ self.addEventListener("fetch", event => {
       const copy = response.clone();
       caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
       return response;
-    }).catch(() => caches.match(event.request).then(cached => cached || caches.match("/unlimited%20claude/Claude.html") || caches.match("/"))));
+    }).catch(() => caches.match(event.request).then(cached => cached || caches.match(new URL("unlimited%20claude/Claude.html", self.registration.scope).toString()) || caches.match(new URL("./", self.registration.scope).toString()))));
     return;
   }
   event.respondWith(caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
