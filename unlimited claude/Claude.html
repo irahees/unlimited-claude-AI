@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#171717">
+    <link rel="manifest" href="../manifest.webmanifest">
+    <link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
     <title>Claude Interface - Fully Functional</title>
     <script src="https://js.puter.com/v2/"></script>
     <style>
@@ -1406,6 +1409,10 @@ If you are running this from a local server (like localhost), the issue is almos
             mobileNew?.addEventListener('click', () => { closeMenu(); startNewChat(); });
             document.querySelectorAll('.nav-item,.recent-item').forEach(el => el.addEventListener('click', closeMenu));
         });
+
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", () => navigator.serviceWorker.register("../sw.js").catch(error => console.warn("PWA offline support:", error)));
+        }
     </script>
 </body>
 </html>
