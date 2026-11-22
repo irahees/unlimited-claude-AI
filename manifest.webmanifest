@@ -3,13 +3,18 @@
   "name": "Claude AI Chat",
   "short_name": "Claude Chat",
   "description": "A mobile-installable Claude-style AI chat interface powered by Puter.js.",
-  "start_url": "./",
+  "start_url": "./unlimited%20claude/Claude.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#171717",
   "theme_color": "#171717",
   "icons": [
-    { "src": "./icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+    {
+      "src": "./icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
   ]
 }
