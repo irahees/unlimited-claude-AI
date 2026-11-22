@@ -867,10 +867,12 @@
 
     <script>
         // Global state
+        // Use model IDs currently supported by Puter.js. Older IDs such as
+        // claude-sonnet-4 have been retired and return "Model not found".
         const availableModels = [
-            { apiName: 'claude-sonnet-4', displayName: 'Claude Sonnet 4', shortName: 'Sonnet 4' },
-            { apiName: 'claude-opus-4', displayName: 'Claude Opus 4', shortName: 'Opus 4' },
-            { apiName: 'claude-3-7-sonnet', displayName: 'Claude 3.7 Sonnet', shortName: 'Sonnet 3.7' }
+            { apiName: 'claude-sonnet-4-6', displayName: 'Claude Sonnet 4.6', shortName: 'Sonnet 4.6' },
+            { apiName: 'claude-opus-4-8', displayName: 'Claude Opus 4.8', shortName: 'Opus 4.8' },
+            { apiName: 'claude-haiku-4-5', displayName: 'Claude Haiku 4.5', shortName: 'Haiku 4.5' }
         ];
         let currentModel = availableModels[0].apiName;
         let chatHistory = [];
@@ -1108,7 +1110,10 @@
             if (!conversation) return;
             currentConversationId = conversationId;
             chatHistory = [...conversation.messages];
-            currentModel = conversation.model;
+            // Older saved chats may reference retired model IDs.
+            currentModel = availableModels.some(m => m.apiName === conversation.model)
+                ? conversation.model
+                : availableModels[0].apiName;
             updateModelDisplay();
             switchToChatView();
             const chatMessages = document.getElementById('chatMessages');
